@@ -1,0 +1,2887 @@
+{
+  "info": {
+    "name": "AntiAI Subscription Service",
+    "description": "Complete API collection for AntiAI Subscription Service\\nPhase 1-5: Auth, Plans, Subscriptions, Invoices, Payments, Dashboard, Notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "plan_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "subscription_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invoice_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "payment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "key",
+                "value": "Content-Type",
+                "type": "text"
+              },
+              {
+                "key": "value",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "type",
+                "value": "text",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@test.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"User Satu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register User 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "key",
+                "value": "Content-Type",
+                "type": "text"
+              },
+              {
+                "key": "value",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "type",
+                "value": "text",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user2@test.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"User Dua\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "key",
+                "value": "Content-Type",
+                "type": "text"
+              },
+              {
+                "key": "value",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "type",
+                "value": "text",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@test.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.success && json.data && json.data.accessToken){",
+                  "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                  "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                  "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                  "  console.log(\"Token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "key",
+                "value": "Content-Type",
+                "type": "text"
+              },
+              {
+                "key": "value",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "type",
+                "value": "text",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.success && json.data && json.data.accessToken){",
+                  "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                  "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                  "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                  "  console.log(\"Token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Finance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "key",
+                "value": "Content-Type",
+                "type": "text"
+              },
+              {
+                "key": "value",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "type",
+                "value": "text",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"finance@example.com\",\n  \"password\": \"finance123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.success && json.data && json.data.accessToken){",
+                  "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                  "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                  "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                  "  console.log(\"Token saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📦 Plans",
+      "item": [
+        {
+          "name": "Get All Plans (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/plans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "plans",
+                "{{plan_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Plan (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/plans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "plans"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pro Max\",\n  \"slug\": \"pro-max\",\n  \"price\": 599000,\n  \"billing_cycle\": \"monthly\",\n  \"description\": \"Paket Pro Max dengan semua fitur\",\n  \"features\": {\n    \"model_access\": [\n      \"gpt-4\",\n      \"gpt-4o\",\n      \"gpt-3.5-turbo\"\n    ],\n    \"message_cap\": null,\n    \"response_speed\": \"fastest\",\n    \"plugins\": true,\n    \"custom_gpts\": true,\n    \"api_access\": true\n  },\n  \"trial_days\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Plan (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "plans",
+                "{{plan_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pro Max Updated\",\n  \"price\": 649000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Plan (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/plans/{{plan_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "plans",
+                "{{plan_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Subscriptions",
+      "item": [
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": \"{{plan_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.success && json.data){",
+                  "  pm.collectionVariables.set(\"subscription_id\", json.data.subscription.id);",
+                  "  if(json.data.invoice) pm.collectionVariables.set(\"invoice_id\", json.data.invoice.id);",
+                  "  console.log(\"Subscription & Invoice ID saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "my"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Subscriptions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Preview Change Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/preview-change",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "preview-change"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_plan_id\": \"{{plan_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Plan (Upgrade/Downgrade)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/change-plan",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "change-plan"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_plan_id\": \"{{plan_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/{{subscription_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "{{subscription_id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscription History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧾 Invoices",
+      "item": [
+        {
+          "name": "Get My Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices",
+                "my"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Invoices (Admin/Finance)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices",
+                "{{invoice_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Invoice Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/{{invoice_id}}/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices",
+                "{{invoice_id}}",
+                "items"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Invoice (Admin/Finance)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"subscription_id\": \"{{subscription_id}}\",\n  \"subtotal\": 299000,\n  \"tax\": 32890,\n  \"discount\": 0,\n  \"due_days\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Invoice Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/{{invoice_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "invoices",
+                "{{invoice_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"paid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Simulate Payment (Bank Transfer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/simulate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "simulate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_method\": \"bank_transfer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.success && json.data && json.data.payment){",
+                  "  pm.collectionVariables.set(\"payment_id\", json.data.payment.id);",
+                  "  console.log(\"Payment ID saved!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Simulate Payment (Credit Card)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/simulate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "simulate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_method\": \"credit_card\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Simulate Payment (E-Wallet)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/simulate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "simulate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_method\": \"e_wallet\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Simulate Payment (QRIS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/simulate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "simulate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_method\": \"qris\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Process Payment - Approve",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/{{payment_id}}/process",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "{{payment_id}}",
+                "process"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approve\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Process Payment - Reject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              },
+              {
+                "key": [
+                  "key",
+                  "Content-Type"
+                ],
+                "value": [
+                  "value",
+                  "application/json"
+                ],
+                "type": [
+                  "type",
+                  "text"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/{{payment_id}}/process",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "{{payment_id}}",
+                "process"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"reject\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/my",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "my"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Payments (Admin/Finance)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Payments - Filter by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments?status=completed",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "completed"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Payments - Filter by Method",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments?method=bank_transfer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "method",
+                  "value": "bank_transfer"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/{{payment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "{{payment_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/admin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "admin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dashboard Finance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/finance",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "finance"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export CSV - Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/export/subscriptions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "export",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export CSV - Invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/export/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "export",
+                "invoices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export CSV - Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/export/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "export",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export CSV - Revenue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/export/revenue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "export",
+                "revenue"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications?unread_only=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "unread_only",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/{{notification_id}}/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "{{notification_id}}",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": [
+                  "key",
+                  "Authorization"
+                ],
+                "value": [
+                  "value",
+                  "Bearer {{access_token}}"
+                ],
+                "type": [
+                  "type",
+                  "string"
+                ]
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/read-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "read-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 Flow Testing - Complete",
+      "item": [
+        {
+          "name": "1. Setup & Login",
+          "item": [
+            {
+              "name": "Step 1: Register New User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "key",
+                    "value": "Content-Type",
+                    "type": "text"
+                  },
+                  {
+                    "key": "value",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "type",
+                    "value": "text",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"testflow@test.com\",\n  \"password\": \"test123456\",\n  \"full_name\": \"Test Flow User\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 2: Login as User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "key",
+                    "value": "Content-Type",
+                    "type": "text"
+                  },
+                  {
+                    "key": "value",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "type",
+                    "value": "text",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"testflow@test.com\",\n  \"password\": \"test123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();",
+                      "if(json.success && json.data && json.data.accessToken){",
+                      "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                      "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                      "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                      "  console.log(\"Token saved!\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 3: Get Plans",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/plans",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "plans"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "2. Subscribe & Pay",
+          "item": [
+            {
+              "name": "Step 4: Subscribe to Plan",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  },
+                  {
+                    "key": [
+                      "key",
+                      "Content-Type"
+                    ],
+                    "value": [
+                      "value",
+                      "application/json"
+                    ],
+                    "type": [
+                      "type",
+                      "text"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/subscriptions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "subscriptions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan_id\": \"{{plan_id}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var j=pm.response.json();if(j.success&&j.data){pm.collectionVariables.set(\"subscription_id\",j.data.subscription.id);pm.collectionVariables.set(\"invoice_id\",j.data.invoice.id);}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 5: Check Invoice",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "invoices",
+                    "{{invoice_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 6: Simulate Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  },
+                  {
+                    "key": [
+                      "key",
+                      "Content-Type"
+                    ],
+                    "value": [
+                      "value",
+                      "application/json"
+                    ],
+                    "type": [
+                      "type",
+                      "text"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/payments/simulate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments",
+                    "simulate"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"payment_method\": \"bank_transfer\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var j=pm.response.json();if(j.success&&j.data&&j.data.payment){pm.collectionVariables.set(\"payment_id\",j.data.payment.id);}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 7: Login Admin (to approve)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "key",
+                    "value": "Content-Type",
+                    "type": "text"
+                  },
+                  {
+                    "key": "value",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "type",
+                    "value": "text",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();",
+                      "if(json.success && json.data && json.data.accessToken){",
+                      "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                      "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                      "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                      "  console.log(\"Token saved!\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 8: Approve Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  },
+                  {
+                    "key": [
+                      "key",
+                      "Content-Type"
+                    ],
+                    "value": [
+                      "value",
+                      "application/json"
+                    ],
+                    "type": [
+                      "type",
+                      "text"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/payments/{{payment_id}}/process",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments",
+                    "{{payment_id}}",
+                    "process"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"action\": \"approve\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 9: Login User Again",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "key",
+                    "value": "Content-Type",
+                    "type": "text"
+                  },
+                  {
+                    "key": "value",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "type",
+                    "value": "text",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"testflow@test.com\",\n  \"password\": \"test123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();",
+                      "if(json.success && json.data && json.data.accessToken){",
+                      "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                      "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                      "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                      "  console.log(\"Token saved!\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 10: Check Subscription Active",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/subscriptions/my",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "subscriptions",
+                    "my"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "3. Upgrade & Dashboard",
+          "item": [
+            {
+              "name": "Step 11: Preview Upgrade",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  },
+                  {
+                    "key": [
+                      "key",
+                      "Content-Type"
+                    ],
+                    "value": [
+                      "value",
+                      "application/json"
+                    ],
+                    "type": [
+                      "type",
+                      "text"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/subscriptions/preview-change",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "subscriptions",
+                    "preview-change"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"new_plan_id\": \"{{plan_id}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 12: Check Notifications",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/notifications",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notifications"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 13: Login Admin for Dashboard",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "key",
+                    "value": "Content-Type",
+                    "type": "text"
+                  },
+                  {
+                    "key": "value",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "type",
+                    "value": "text",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();",
+                      "if(json.success && json.data && json.data.accessToken){",
+                      "  pm.collectionVariables.set(\"access_token\", json.data.accessToken);",
+                      "  pm.collectionVariables.set(\"refresh_token\", json.data.refreshToken);",
+                      "  pm.collectionVariables.set(\"user_id\", json.data.user.id);",
+                      "  console.log(\"Token saved!\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Step 14: Admin Dashboard",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/dashboard/admin",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "admin"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 15: Finance Dashboard",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/dashboard/finance",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "finance"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 16: Subscription History",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/subscriptions/history",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "subscriptions",
+                    "history"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 17: Export CSV Revenue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": [
+                      "key",
+                      "Authorization"
+                    ],
+                    "value": [
+                      "value",
+                      "Bearer {{access_token}}"
+                    ],
+                    "type": [
+                      "type",
+                      "string"
+                    ]
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/dashboard/export/revenue",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard",
+                    "export",
+                    "revenue"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
