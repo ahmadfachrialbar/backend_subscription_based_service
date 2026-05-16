@@ -1,6 +1,5 @@
 const { pool } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
-const { arrayToCSV, columnDefinitions } = require('../utils/csvExporter');
 
 // GET /api/dashboard/admin
 const getAdminDashboard = async (req, res, next) => {
@@ -44,45 +43,4 @@ const getFinanceDashboard = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-// CSV Exports
-const exportSubscriptionsCSV = async (req, res, next) => {
-    try {
-        const [data] = await pool.query(`SELECT s.*, u.email as user_email, u.full_name, p.name as plan_name FROM subscriptions s JOIN users u ON s.user_id = u.id JOIN plans p ON s.plan_id = p.id ORDER BY s.started_at DESC`);
-        const csv = arrayToCSV(data, columnDefinitions.subscriptions);
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=subscriptions_${new Date().toISOString().split('T')[0]}.csv`);
-        return res.send(csv);
-    } catch (error) { next(error); }
-};
-
-const exportInvoicesCSV = async (req, res, next) => {
-    try {
-        const [data] = await pool.query(`SELECT i.*, u.email as user_email, u.full_name, p.name as plan_name FROM invoices i JOIN users u ON i.user_id = u.id LEFT JOIN subscriptions s ON i.subscription_id = s.id LEFT JOIN plans p ON s.plan_id = p.id ORDER BY i.created_at DESC`);
-        const csv = arrayToCSV(data, columnDefinitions.invoices);
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=invoices_${new Date().toISOString().split('T')[0]}.csv`);
-        return res.send(csv);
-    } catch (error) { next(error); }
-};
-
-const exportPaymentsCSV = async (req, res, next) => {
-    try {
-        const [data] = await pool.query(`SELECT p.*, i.invoice_number, u.email as user_email, u.full_name FROM payments p JOIN invoices i ON p.invoice_id = i.id JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC`);
-        const csv = arrayToCSV(data, columnDefinitions.payments);
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=payments_${new Date().toISOString().split('T')[0]}.csv`);
-        return res.send(csv);
-    } catch (error) { next(error); }
-};
-
-const exportRevenueCSV = async (req, res, next) => {
-    try {
-        const [data] = await pool.query(`SELECT DATE_FORMAT(paid_at, '%Y-%m') as month, SUM(total) as total_revenue, COUNT(*) as total_transactions, AVG(total) as avg_transaction FROM invoices WHERE status = 'paid' AND paid_at IS NOT NULL GROUP BY DATE_FORMAT(paid_at, '%Y-%m') ORDER BY month DESC`);
-        const csv = arrayToCSV(data, columnDefinitions.revenue);
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename=revenue_${new Date().toISOString().split('T')[0]}.csv`);
-        return res.send(csv);
-    } catch (error) { next(error); }
-};
-
-module.exports = { getAdminDashboard, getFinanceDashboard, exportSubscriptionsCSV, exportInvoicesCSV, exportPaymentsCSV, exportRevenueCSV };
+module.exports = { getAdminDashboard, getFinanceDashboard };

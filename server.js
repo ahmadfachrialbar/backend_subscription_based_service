@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
-        message: 'Subscription Service API berjalan!',
+        message: 'API berjalan!',
         version: '2.0.0',
         status: 'active',
         endpoints: {
@@ -68,17 +68,6 @@ initDatabase().then(() => {
 
             app.listen(PORT, () => {
                 console.log(`🚀 Server berjalan http://localhost:${PORT}`);
-                console.log('📋 Endpoints tersedia:');
-                console.log('   POST   /api/auth/register');
-                console.log('   POST   /api/auth/login');
-                console.log('   GET    /api/plans');
-                console.log('   POST   /api/subscriptions');
-                console.log('   POST   /api/subscriptions/change-plan');
-                console.log('   POST   /api/payments/simulate');
-                console.log('   POST   /api/payments/:id/process');
-                console.log('   GET    /api/dashboard/admin');
-                console.log('   GET    /api/dashboard/finance');
-                console.log('   GET    /api/notifications');
             });
         });
     });

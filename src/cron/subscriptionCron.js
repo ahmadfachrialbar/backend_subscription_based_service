@@ -141,7 +141,7 @@ const startCronJobs = () => {
         }
     });
 
-    console.log('⏰ Cron job terjadwal: setiap hari jam 00:05');
+    console.log('⏰ Cron job berjalan sesuai jadwal');
 };
 
 module.exports = { startCronJobs };

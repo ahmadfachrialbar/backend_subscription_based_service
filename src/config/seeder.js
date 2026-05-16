@@ -7,7 +7,6 @@ const seedUsers = async () => {
     const [admins] = await pool.query("SELECT id FROM users WHERE role = ?", ["admin"]);
 
     if (admins.length > 0) {
-      console.log("✅ Admin sudah ada");
     } else {
       const salt = await bcrypt.genSalt(10);
       const adminPassword = await bcrypt.hash("admin123", salt);
@@ -17,14 +16,13 @@ const seedUsers = async () => {
         `INSERT INTO users (email, password_hash, full_name, role, status) VALUES (?, ?, ?, ?, ?)`,
         ["admin@example.com", adminPassword, "Administrator", "admin", "active"]
       );
-      console.log("✅ Admin dibuat: admin@example.com / admin123");
 
       await pool.query(
         `INSERT INTO users (email, password_hash, full_name, role, status) VALUES (?, ?, ?, ?, ?)`,
         ["finance@example.com", financePassword, "Finance Staff", "finance", "active"]
       );
-      console.log("✅ Finance dibuat: finance@example.com / finance123");
     }
+    console.log("✅ Admin dan Finance dibuat")
   } catch (error) {
     console.error("❌ Seeder users:", error.message);
   }
@@ -35,8 +33,8 @@ const seedPlans = async () => {
   try {
     const [existingPlans] = await pool.query("SELECT id FROM plans WHERE slug = ?", ["free"]);
 
+    // cek data plans sudah ada apa belum
     if (existingPlans.length > 0) {
-      console.log("✅ Plans sudah ada");
       return;
     }
 
@@ -120,7 +118,7 @@ const seedPlans = async () => {
       ]
     );
 
-    console.log("✅ Plans seeded: Free, Plus, Team, Enterprise");
+    console.log("✅ Plans seeded");
   } catch (error) {
     console.error("❌ Seeder plans:", error.message);
   }
