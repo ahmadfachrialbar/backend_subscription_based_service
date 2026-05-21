@@ -184,6 +184,8 @@ Ada dua jenis token yang digunakan:
 1. **Access Token**: Masa aktif singkat (contoh 15 menit). Digunakan untuk mengakses endpoint.
 2. **Refresh Token**: Masa aktif lebih lama (contoh 7 hari). Digunakan untuk meminta access token baru ketika access token sudah kedaluwarsa.
 
+Dinamis Access Token Authorizarion di Postman
+
 **Alur Login Lengkap:**
 1. User mengirim email dan password melalui form login.
 2. Server mencari user berdasarkan email di database.

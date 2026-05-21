@@ -2,16 +2,7 @@ const { pool } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const { generateTransactionId } = require('../utils/invoiceGenerator');
 
-// ============================================
-// SIMULASI PEMBAYARAN
-// ============================================
-
-/**
- * POST /api/payments/simulate
- * Simulasi pembayaran untuk invoice
- * Body: { invoice_id, payment_method }
- * payment_method: 'bank_transfer', 'credit_card', 'e_wallet', 'qris'
- */
+// Simulasi pembayaran untuk testing (tanpa integrasi payment gateway)
 const simulatePayment = async (req, res, next) => {
     try {
         const { invoice_id, payment_method } = req.body;
@@ -118,11 +109,7 @@ const simulatePayment = async (req, res, next) => {
     }
 };
 
-/**
- * POST /api/payments/:id/process
- * Proses/konfirmasi pembayaran (simulasi: langsung sukses)
- * Ini simulasi callback dari payment gateway
- */
+// Proses/konfirmasi pembayaran (simulasi: langsung sukses)
 const processPayment = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -146,10 +133,7 @@ const processPayment = async (req, res, next) => {
 
         try {
             if (action === 'approve' || action === undefined) {
-                // ============================
-                // APPROVE PAYMENT
-                // ============================
-
+                // approve pembayaran
                 // 1. Update payment status
                 await connection.query(
                     'UPDATE payments SET payment_status = "completed", paid_at = NOW(), updated_at = NOW() WHERE id = ?',
@@ -214,9 +198,6 @@ const processPayment = async (req, res, next) => {
                 return successResponse(res, updatedPayment[0], 'Pembayaran berhasil diproses! Subscription aktif.');
 
             } else if (action === 'reject') {
-                // ============================
-                // REJECT PAYMENT
-                // ============================
 
                 await connection.query(
                     'UPDATE payments SET payment_status = "failed", updated_at = NOW() WHERE id = ?',
@@ -254,10 +235,7 @@ const processPayment = async (req, res, next) => {
     }
 };
 
-/**
- * GET /api/payments/my
- * Lihat riwayat pembayaran user
- */
+// riwayat pembayaran user
 const getMyPayments = async (req, res, next) => {
     try {
         const user_id = req.user.id;
@@ -277,10 +255,7 @@ const getMyPayments = async (req, res, next) => {
     }
 };
 
-/**
- * GET /api/payments
- * Lihat semua pembayaran (admin/finance)
- */
+// Read all pembayaran 
 const getAllPayments = async (req, res, next) => {
     try {
         const { status, method, start_date, end_date } = req.query;
@@ -320,10 +295,7 @@ const getAllPayments = async (req, res, next) => {
     }
 };
 
-/**
- * GET /api/payments/:id
- * Detail pembayaran
- */
+// detail pembayaran
 const getPaymentById = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -355,10 +327,7 @@ const getPaymentById = async (req, res, next) => {
     }
 };
 
-// ============================================
-// HELPER
-// ============================================
-
+// helper
 function getPaymentInstructions(method, details) {
     switch (method) {
         case 'bank_transfer':

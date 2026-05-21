@@ -49,7 +49,7 @@ const markAsRead = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-// PUT /api/notifications/read-all - Tandai semua sebagai dibaca
+// PUT /api/notifications/read-all
 const markAllAsRead = async (req, res, next) => {
     try {
         const user_id = req.user.id;
@@ -61,7 +61,7 @@ const markAllAsRead = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-// Helper: Buat notifikasi (dipanggil dari controller lain / cron)
+// Helper: Buat notifikasi 
 const createNotification = async (user_id, title, message, type = 'info', category = 'system', metadata = null) => {
     try {
         await pool.query(

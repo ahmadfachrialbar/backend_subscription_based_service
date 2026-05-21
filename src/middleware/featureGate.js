@@ -3,11 +3,7 @@ const { errorResponse } = require('../utils/responseHelper');
 
 /**
  * Feature Gating Middleware
- * Membatasi akses fitur berdasarkan paket langganan user
- * 
- * Contoh penggunaan di route:
- *   router.get('/api-endpoint', verifyToken, checkFeature('api_access'), handler);
- *   router.get('/plugins', verifyToken, checkFeature('plugins'), handler);
+ * Membatasi akses fitur berdasarkan paket langganan user 
  */
 const checkFeature = (featureName) => {
     return async (req, res, next) => {
@@ -68,7 +64,7 @@ const checkFeature = (featureName) => {
 };
 
 /**
- * Middleware untuk cek message cap (batasan jumlah pesan)
+ * Middleware untuk cek message (batasan jumlah pesan)
  */
 const checkMessageCap = async (req, res, next) => {
     try {
@@ -96,10 +92,7 @@ const checkMessageCap = async (req, res, next) => {
                 ? JSON.parse(subs[0].features) : subs[0].features || {};
         } catch (e) { features = {}; }
 
-        // null = unlimited
         if (features.message_cap !== null && features.message_cap !== undefined) {
-            // Di implementasi nyata, hitung usage harian dari tabel usage/logs
-            // Ini contoh struktur saja
             req.message_cap = features.message_cap;
         }
 

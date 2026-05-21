@@ -120,10 +120,6 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // ====================================
-        // TABEL BARU - Phase 3, 4, 5
-        // ====================================
-
         // Tabel payments (simulasi pembayaran)
         await connection.query(`
             CREATE TABLE IF NOT EXISTS payments (

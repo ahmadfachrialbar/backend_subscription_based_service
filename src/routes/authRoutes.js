@@ -16,11 +16,9 @@ router.post('/login', login);
 
 
 // GET /api/auth/profile
-// verifyToken = harus login dulu
 router.get('/profile', verifyToken, getProfile);
 
-// GET /api/auth/users
-// verifyToken + authorize('admin') = hanya admin yang bisa akses
+// GET /api/auth/users : all users
 router.get('/users', verifyToken, authorize('admin'), getAllUsers);
 
 module.exports = router;
