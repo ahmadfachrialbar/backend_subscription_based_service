@@ -176,23 +176,5 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
-// logout
-const logout = async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
 
-    if (!refreshToken) {
-      return errorResponse(res, "Refresh token wajib disertakan.", 400);
-    }
-
-    // Hapus refresh token dari database
-    await pool.query("DELETE FROM refresh_tokens WHERE token = ?", [
-      refreshToken,
-    ]);
-
-    return successResponse(res, null, "Logout berhasil.");
-  } catch (error) {
-    next(error);
-  }
-}
-module.exports = { register, login, getProfile, getAllUsers, logout };
+module.exports = { register, login, getProfile, getAllUsers };
