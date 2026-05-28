@@ -3,14 +3,14 @@ require("dotenv").config();
 
 // Konfigurasi koneksi database
 const dbConfig = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 2,
+  queueLimit: 0,
 };
 
 // Buat connection pool
@@ -18,12 +18,12 @@ const pool = mysql.createPool(dbConfig);
 
 // Fungsi untuk inisialisasi database (create tabel)
 const initDatabase = async () => {
-    try {
-        const connection = await pool.getConnection();
-        console.log("✅ Koneksi Db");
+  try {
+    const connection = await pool.getConnection();
+    console.log("✅ Koneksi Db");
 
-        // Buat tabel users
-        await connection.query(`
+    // Buat tabel users
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 email VARCHAR(255) UNIQUE NOT NULL,
@@ -37,8 +37,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Buat tabel refresh_tokens
-        await connection.query(`
+    // Buat tabel refresh_tokens
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS refresh_tokens (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 user_id VARCHAR(36) NOT NULL,
@@ -51,8 +51,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Buat tabel plan
-        await connection.query(`
+    // Buat tabel plan
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS plans (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 name VARCHAR(50) NOT NULL,
@@ -70,8 +70,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Buat tabel subscriptions
-        await connection.query(`
+    // Buat tabel subscriptions
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS subscriptions (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 user_id VARCHAR(36) NOT NULL,
@@ -93,8 +93,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Buat tabel invoices
-        await connection.query(`
+    // Buat tabel invoices
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS invoices (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 user_id VARCHAR(36) NOT NULL,
@@ -120,8 +120,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Tabel payments (simulasi pembayaran)
-        await connection.query(`
+    // Tabel payments (simulasi pembayaran)
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS payments (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 invoice_id VARCHAR(36) NOT NULL,
@@ -142,8 +142,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Tabel subscription_history (tracking perubahan)
-        await connection.query(`
+    // Tabel subscription_history (tracking perubahan)
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS subscription_history (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 subscription_id VARCHAR(36) NOT NULL,
@@ -163,8 +163,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Tabel invoice_items (detail tagihan)
-        await connection.query(`
+    // Tabel invoice_items (detail tagihan)
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS invoice_items (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 invoice_id VARCHAR(36) NOT NULL,
@@ -179,8 +179,8 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        // Tabel notifications
-        await connection.query(`
+    // Tabel notifications
+    await connection.query(`
             CREATE TABLE IF NOT EXISTS notifications (
                 id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 user_id VARCHAR(36) NOT NULL,
@@ -197,12 +197,12 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-        connection.release();
-        console.log("✅ Tabel siap");
-    } catch (error) {
-        console.error("❌ Koneksi database:", error.message);
-        process.exit(1);
-    }
+    connection.release();
+    console.log("✅ Tabel siap");
+  } catch (error) {
+    console.error("❌ Koneksi database:", error.message);
+    process.exit(1);
+  }
 };
 
 module.exports = { pool, initDatabase };
