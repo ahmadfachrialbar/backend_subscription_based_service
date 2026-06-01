@@ -58,10 +58,10 @@ const seedPlans = async () => {
         "Free",
         "free",
         0,
-        "forever",
+        "Selamanya",
         "Paket gratis dengan fitur dasar",
         JSON.stringify({
-          model_access: ["gpt-3.5-turbo"],
+          model_access: ["gpt-3.5", " Gemini 2.5-flash"],
           message_cap: 40,
           response_speed: "standard",
           plugins: false,
@@ -82,7 +82,7 @@ const seedPlans = async () => {
         "plus",
         299000,
         "monthly",
-        "Akses prioritas ke GPT-4 dan fitur premium",
+        "Model dengan token lebih banyak dari paket free",
         JSON.stringify({
           model_access: ["gpt-4", "gpt-4o", "gpt-3.5-turbo"],
           message_cap: null,
@@ -95,24 +95,24 @@ const seedPlans = async () => {
       ],
     );
 
-    // Plan 3: Team
+    // Plan 3: Pro
     await pool.query(
       `
       INSERT INTO plans (name, slug, price, billing_cycle, description, features, trial_days)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        "Team",
-        "team",
-        399000,
+        "Pro",
+        "pro",
+        799000,
         "monthly",
-        "Paket untuk tim dengan admin console",
+        "Model dan token lebih banyak dari paket plus, dan free 2tb storage",
         JSON.stringify({
-          model_access: ["gpt-4", "gpt-4o", "gpt-3.5-turbo"],
+          model_access: ["gpt-4.1", "claude sonnet 4.5", "claude opus", "gemini", "gpt-4o", "gpt-3.5-turbo"],
           message_cap: null,
           response_speed: "priority",
           plugins: true,
           custom_gpts: true,
-          api_access: false,
+          api_access: true,
           team_features: {
             workspace: true,
             admin_console: true,
@@ -120,32 +120,6 @@ const seedPlans = async () => {
           },
         }),
         7,
-      ],
-    );
-
-    // Plan 4: Enterprise
-    await pool.query(
-      `
-      INSERT INTO plans (name, slug, price, billing_cycle, description, features, trial_days)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        "Enterprise",
-        "enterprise",
-        899000,
-        "yearly",
-        "Paket enterprise dengan SLA dan custom model",
-        JSON.stringify({
-          model_access: ["gpt-4", "gpt-4o", "gpt-3.5-turbo", "custom"],
-          message_cap: null,
-          response_speed: "fastest",
-          plugins: true,
-          custom_gpts: true,
-          api_access: true,
-          sso: true,
-          audit_logs: true,
-          dedicated_support: true,
-        }),
-        14,
       ],
     );
 
