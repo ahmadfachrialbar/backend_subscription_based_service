@@ -58,7 +58,7 @@ const seedPlans = async () => {
         "Free",
         "free",
         0,
-        "Selamanya",
+        "forever",
         "Paket gratis dengan fitur dasar",
         JSON.stringify({
           model_access: ["gpt-3.5", " Gemini 2.5-flash"],
