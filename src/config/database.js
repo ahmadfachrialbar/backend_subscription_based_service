@@ -1,25 +1,144 @@
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
-// Konfigurasi koneksi database
+// =============================================================
+// STRATEGI: Single Connection per Request (Serverless-Optimized)
+// =============================================================
+//
+// MASALAH dengan Pool di Serverless:
+//   - Vercel membuat banyak instance (cold start) secara paralel
+//   - Setiap instance membuat pool sendiri dengan N koneksi
+//   - Jika 3 instance × 2 koneksi = 6 > batas 5 → ERROR
+//
+// SOLUSI: Buat 1 koneksi saat dibutuhkan, tutup setelah selesai
+//   - Setiap request hanya pakai 1 koneksi
+//   - Koneksi ditutup (end) setelah query selesai
+//   - Tidak ada koneksi idle yang menggantung
+//   - Meski ada 5 instance, hanya yang sedang aktif yang pakai koneksi
+//
+// CATATAN: `pool` tetap di-export untuk backward compatibility,
+//   tapi pool dibuat dengan connectionLimit: 1 dan idleTimeout
+//   sangat rendah agar koneksi cepat dilepas.
+// =============================================================
+
 const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
+  port: parseInt(process.env.DB_PORT) || 3306,
+  // -- Serverless-optimized pool settings --
   waitForConnections: true,
-  connectionLimit: 1,
+  connectionLimit: 1,        // Hanya 1 koneksi per instance
+  maxIdle: 0,                // Jangan simpan koneksi idle
+  idleTimeout: 5000,         // Tutup koneksi idle setelah 5 detik
   queueLimit: 0,
+  enableKeepAlive: false,    // Tidak perlu keep-alive di serverless
+  connectTimeout: 10000,     // Timeout koneksi 10 detik
 };
 
-// Buat connection pool
-const pool = mysql.createPool(dbConfig);
+// Pool untuk backward compatibility (pool.query masih bisa dipakai)
+let pool;
 
-// Fungsi untuk inisialisasi database (create tabel)
-const initDatabase = async () => {
+/**
+ * Mendapatkan pool instance (lazy initialization).
+ * Di serverless, pool bisa mati antar invokasi, jadi kita
+ * periksa dan buat ulang jika perlu.
+ */
+const getPool = () => {
+  if (!pool) {
+    pool = mysql.createPool(dbConfig);
+
+    // Event listener untuk monitoring (opsional, bisa dihapus di production)
+    pool.on('connection', () => {
+      console.log('🔌 Pool: koneksi baru dibuat');
+    });
+
+    pool.on('release', () => {
+      console.log('♻️  Pool: koneksi dilepas');
+    });
+  }
+  return pool;
+};
+
+/**
+ * Membuat koneksi tunggal langsung (tanpa pool).
+ * Digunakan untuk operasi yang butuh kontrol penuh,
+ * seperti transaksi atau initDatabase.
+ *
+ * ⚠️ WAJIB panggil connection.end() setelah selesai!
+ */
+const createConnection = async () => {
+  return await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: parseInt(process.env.DB_PORT) || 3306,
+    connectTimeout: 10000,
+  });
+};
+
+/**
+ * Helper untuk menjalankan query dengan auto-release.
+ * Menggunakan pool.query yang otomatis ambil & lepas koneksi.
+ *
+ * Contoh:
+ *   const [rows] = await query('SELECT * FROM users WHERE id = ?', [userId]);
+ */
+const query = async (sql, params) => {
+  const p = getPool();
   try {
-    const connection = await pool.getConnection();
+    return await p.query(sql, params);
+  } catch (error) {
+    // Jika koneksi pool rusak, destroy & buat ulang
+    if (error.code === 'PROTOCOL_CONNECTION_LOST' ||
+        error.code === 'ECONNRESET' ||
+        error.code === 'ECONNREFUSED') {
+      console.warn('⚠️ Koneksi pool rusak, membuat ulang...');
+      try { await pool.end(); } catch (e) { /* ignore */ }
+      pool = null;
+      const newPool = getPool();
+      return await newPool.query(sql, params);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Helper untuk menjalankan transaksi dengan auto-cleanup.
+ * Koneksi PASTI ditutup setelah callback selesai (sukses/gagal).
+ *
+ * Contoh:
+ *   const result = await withTransaction(async (conn) => {
+ *     await conn.query('UPDATE payments SET status = ? WHERE id = ?', ['completed', id]);
+ *     await conn.query('UPDATE invoices SET status = ? WHERE id = ?', ['paid', invoiceId]);
+ *     return { success: true };
+ *   });
+ */
+const withTransaction = async (callback) => {
+  const connection = await createConnection();
+  try {
+    await connection.beginTransaction();
+    const result = await callback(connection);
+    await connection.commit();
+    return result;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    await connection.end(); // SELALU tutup koneksi
+  }
+};
+
+// =========================================================
+// Inisialisasi Database (Create Tables)
+// Menggunakan koneksi tunggal yang ditutup setelah selesai
+// =========================================================
+const initDatabase = async () => {
+  let connection;
+  try {
+    connection = await createConnection();
     console.log("✅ Koneksi Db");
 
     // Buat tabel users
@@ -197,12 +316,54 @@ const initDatabase = async () => {
             ) ENGINE=InnoDB
         `);
 
-    connection.release();
     console.log("✅ Tabel siap");
   } catch (error) {
     console.error("❌ Koneksi database:", error.message);
     process.exit(1);
+  } finally {
+    // PENTING: Tutup koneksi setelah init selesai!
+    if (connection) await connection.end();
   }
 };
 
-module.exports = { pool, initDatabase };
+/**
+ * Graceful shutdown - tutup pool saat process mau mati.
+ * Penting untuk mencegah koneksi zombie di serverless.
+ */
+const closePool = async () => {
+  if (pool) {
+    try {
+      await pool.end();
+      pool = null;
+      console.log('🔌 Pool ditutup');
+    } catch (e) {
+      console.error('⚠️ Error menutup pool:', e.message);
+    }
+  }
+};
+
+// Tutup pool saat process exit (untuk serverless cleanup)
+process.on('SIGTERM', closePool);
+process.on('SIGINT', closePool);
+
+// Proxy object agar `pool.query(...)` dan `pool.getConnection()`
+// tetap berfungsi di semua file yang sudah import { pool }.
+// Ini membuat migrasi zero-effort — tidak perlu ubah controller.
+const poolProxy = new Proxy({}, {
+  get(target, prop) {
+    const p = getPool();
+    if (typeof p[prop] === 'function') {
+      return p[prop].bind(p);
+    }
+    return p[prop];
+  }
+});
+
+module.exports = {
+  pool: poolProxy,         // Backward compatible - bisa dipakai pool.query()
+  query,                   // Helper baru - auto reconnect
+  withTransaction,         // Helper baru - auto commit/rollback/close
+  createConnection,        // Untuk kasus yang butuh koneksi manual
+  initDatabase,
+  closePool,
+};

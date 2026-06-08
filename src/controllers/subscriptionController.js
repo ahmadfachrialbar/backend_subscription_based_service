@@ -1,4 +1,4 @@
-const { pool } = require("../config/database");
+const { pool, withTransaction } = require("../config/database");
 const { successResponse, errorResponse } = require("../utils/responseHelper");
 const { createAutoInvoice } = require("../utils/invoiceGenerator");
 const { calculateProration } = require("../utils/prorationCalculator");
@@ -287,22 +287,21 @@ const changePlan = async (req, res, next) => {
       currentSub.current_period_end,
     );
 
-    const connection = await pool.getConnection();
-    await connection.beginTransaction();
+    const oldPlanId = currentSub.plan_id;
+    const oldStatus = currentSub.status;
+    const actionType = proration.is_upgrade ? "upgraded" : "downgraded";
 
-    try {
-      const oldPlanId = currentSub.plan_id;
-      const oldStatus = currentSub.status;
+    // Hitung periode baru (mulai dari sekarang)
+    const now = new Date();
+    let newPeriodEnd = new Date(now);
+    if (newPlan.billing_cycle === "monthly")
+      newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+    else if (newPlan.billing_cycle === "yearly")
+      newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
+    else newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 100);
 
-      // Hitung periode baru (mulai dari sekarang)
-      const now = new Date();
-      let newPeriodEnd = new Date(now);
-      if (newPlan.billing_cycle === "monthly")
-        newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
-      else if (newPlan.billing_cycle === "yearly")
-        newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
-      else newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 100);
-
+    // Gunakan withTransaction untuk auto commit/rollback/close
+    await withTransaction(async (connection) => {
       // Update subscription ke plan baru
       await connection.query(
         `
@@ -312,7 +311,6 @@ const changePlan = async (req, res, next) => {
       );
 
       // Catat history
-      const action = proration.is_upgrade ? "upgraded" : "downgraded";
       await connection.query(
         `
                 INSERT INTO subscription_history (subscription_id, user_id, action, old_plan_id, new_plan_id, old_status, new_status, metadata)
@@ -320,56 +318,49 @@ const changePlan = async (req, res, next) => {
         [
           currentSub.id,
           user_id,
-          action,
+          actionType,
           oldPlanId,
           new_plan_id,
           oldStatus,
           JSON.stringify(proration),
         ],
       );
+    });
 
-      await connection.commit();
+    // Setelah transaksi selesai & koneksi ditutup, lanjutkan operasi non-transaksional
+    const invoice = await createAutoInvoice({
+      user_id,
+      subscription_id: currentSub.id,
+      plan: newPlan,
+      periodStart: now,
+      periodEnd: newPeriodEnd,
+      prorationCredit: proration.credit,
+      description: `${proration.type === "upgrade" ? "Upgrade" : "Downgrade"} ke ${newPlan.name}`,
+    });
 
-      // Generate invoice dengan proration
-      const invoice = await createAutoInvoice({
-        user_id,
-        subscription_id: currentSub.id,
-        plan: newPlan,
-        periodStart: now,
-        periodEnd: newPeriodEnd,
-        prorationCredit: proration.credit,
-        description: `${proration.type === "upgrade" ? "Upgrade" : "Downgrade"} ke ${newPlan.name}`,
-      });
+    await createNotification(
+      user_id,
+      proration.is_upgrade
+        ? "Paket Berhasil Di-upgrade! 🚀"
+        : "Paket Berhasil Di-downgrade",
+      proration.summary,
+      proration.is_upgrade ? "success" : "info",
+      "subscription",
+      { subscription_id: currentSub.id, proration },
+    );
 
-      await createNotification(
-        user_id,
-        proration.is_upgrade
-          ? "Paket Berhasil Di-upgrade! 🚀"
-          : "Paket Berhasil Di-downgrade",
-        proration.summary,
-        proration.is_upgrade ? "success" : "info",
-        "subscription",
-        { subscription_id: currentSub.id, proration },
-      );
-
-      const [updatedSub] = await pool.query(
-        `
+    const [updatedSub] = await pool.query(
+      `
                 SELECT s.*, p.name as plan_name, p.price, p.billing_cycle
                 FROM subscriptions s JOIN plans p ON s.plan_id = p.id WHERE s.id = ?`,
-        [currentSub.id],
-      );
+      [currentSub.id],
+    );
 
-      return successResponse(
-        res,
-        { subscription: updatedSub[0], invoice, proration },
-        `Paket berhasil di-${action}!`,
-      );
-    } catch (err) {
-      await connection.rollback();
-      throw err;
-    } finally {
-      connection.release();
-    }
+    return successResponse(
+      res,
+      { subscription: updatedSub[0], invoice, proration },
+      `Paket berhasil di-${actionType}!`,
+    );
   } catch (error) {
     next(error);
   }

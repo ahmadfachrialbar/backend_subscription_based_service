@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const { initDatabase } = require('./src/config/database');
+const { initDatabase, closePool } = require('./src/config/database');
 const { seedUsers, seedPlans } = require('./src/config/seeder');
 
 // Routes
@@ -19,7 +19,7 @@ const notificationRoutes = require('./src/routes/notificationRoutes');
 // Middleware
 const { errorHandler } = require('./src/middleware/errorHandler');
 
-// Cron
+// Cron - Hanya jalankan di non-serverless environment
 const { startCronJobs } = require('./src/cron/subscriptionCron');
 
 const app = express();
@@ -28,6 +28,39 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// =============================================================
+// Serverless-safe init: jalankan initDatabase SEKALI saja.
+// Di Vercel, module di-cache antar invokasi pada instance yang sama,
+// jadi init hanya berjalan 1x per cold start.
+// =============================================================
+let dbInitialized = false;
+const ensureDbInit = async () => {
+    if (dbInitialized) return;
+    try {
+        await initDatabase();
+        await seedUsers();
+        await seedPlans();
+        dbInitialized = true;
+    } catch (error) {
+        console.error('❌ Gagal inisialisasi DB:', error.message);
+        // Jangan set dbInitialized = true, biar retry di request berikutnya
+    }
+};
+
+// Middleware: pastikan DB sudah init sebelum handle request
+app.use(async (req, res, next) => {
+    try {
+        await ensureDbInit();
+        next();
+    } catch (error) {
+        res.status(503).json({
+            success: false,
+            message: 'Database belum siap. Silakan coba lagi.',
+            error: error.message,
+        });
+    }
+});
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -59,16 +92,26 @@ app.use('/api/notifications', notificationRoutes);
 // Error handler (harus paling akhir)
 app.use(errorHandler);
 
-// Startup
-initDatabase().then(() => {
-    seedUsers().then(() => {
-        seedPlans().then(() => {
-            // Start cron jobs
-            startCronJobs();
+// =============================================================
+// Startup: Bedakan antara local dev vs Vercel serverless
+// =============================================================
+const IS_VERCEL = process.env.VERCEL || process.env.VERCEL_ENV;
 
-            app.listen(PORT, () => {
-                console.log(`🚀 Server berjalan http://localhost:${PORT}`);
+if (!IS_VERCEL) {
+    // Local development - jalankan seperti biasa
+    initDatabase().then(() => {
+        seedUsers().then(() => {
+            seedPlans().then(() => {
+                // Start cron jobs (hanya di local, TIDAK di Vercel)
+                startCronJobs();
+
+                app.listen(PORT, () => {
+                    console.log(`🚀 Server berjalan http://localhost:${PORT}`);
+                });
             });
         });
     });
-});
+}
+
+// Export untuk Vercel serverless
+module.exports = app;

@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { pool, withTransaction } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const { generateTransactionId } = require('../utils/invoiceGenerator');
 const midtransClient = require('midtrans-client');
@@ -135,13 +135,13 @@ const processPayment = async (req, res, next) => {
             return errorResponse(res, `Payment sudah diproses (status: ${payment.payment_status}).`, 400);
         }
 
-        // Mulai transaksi database
-        const connection = await pool.getConnection();
-        await connection.beginTransaction();
+        if (action !== 'approve' && action !== 'reject' && action !== undefined) {
+            return errorResponse(res, 'Action tidak valid. Gunakan "approve" atau "reject".', 400);
+        }
 
-        try {
+        // Gunakan withTransaction untuk auto commit/rollback/close
+        await withTransaction(async (connection) => {
             if (action === 'approve' || action === undefined) {
-                // approve pembayaran
                 // 1. Update payment status
                 await connection.query(
                     'UPDATE payments SET payment_status = "completed", paid_at = NOW(), updated_at = NOW() WHERE id = ?',
@@ -163,7 +163,6 @@ const processPayment = async (req, res, next) => {
                 if (invoices.length > 0 && invoices[0].subscription_id) {
                     const subId = invoices[0].subscription_id;
 
-                    // Ambil status subscription saat ini
                     const [subs] = await connection.query(
                         'SELECT * FROM subscriptions WHERE id = ?',
                         [subId]
@@ -200,19 +199,12 @@ const processPayment = async (req, res, next) => {
                      JSON.stringify({ payment_id: payment.id, invoice_id: payment.invoice_id })]
                 );
 
-                await connection.commit();
-
-                const [updatedPayment] = await pool.query('SELECT * FROM payments WHERE id = ?', [id]);
-                return successResponse(res, updatedPayment[0], 'Pembayaran berhasil diproses! Subscription aktif.');
-
             } else if (action === 'reject') {
-
                 await connection.query(
                     'UPDATE payments SET payment_status = "failed", updated_at = NOW() WHERE id = ?',
                     [id]
                 );
 
-                // Buat notifikasi gagal
                 await connection.query(`
                     INSERT INTO notifications (user_id, title, message, type, category, metadata)
                     VALUES (?, ?, ?, 'danger', 'payment', ?)`,
@@ -220,23 +212,16 @@ const processPayment = async (req, res, next) => {
                      `Pembayaran sebesar Rp ${parseFloat(payment.amount).toLocaleString('id-ID')} gagal diproses.`,
                      JSON.stringify({ payment_id: payment.id, invoice_id: payment.invoice_id })]
                 );
-
-                await connection.commit();
-
-                const [updatedPayment] = await pool.query('SELECT * FROM payments WHERE id = ?', [id]);
-                return successResponse(res, updatedPayment[0], 'Pembayaran ditolak.');
-
-            } else {
-                await connection.rollback();
-                return errorResponse(res, 'Action tidak valid. Gunakan "approve" atau "reject".', 400);
             }
+        });
 
-        } catch (err) {
-            await connection.rollback();
-            throw err;
-        } finally {
-            connection.release();
+        // Ambil data terbaru setelah transaksi selesai (koneksi sudah ditutup)
+        const [updatedPayment] = await pool.query('SELECT * FROM payments WHERE id = ?', [id]);
+        
+        if (action === 'reject') {
+            return successResponse(res, updatedPayment[0], 'Pembayaran ditolak.');
         }
+        return successResponse(res, updatedPayment[0], 'Pembayaran berhasil diproses! Subscription aktif.');
 
     } catch (error) {
         next(error);
