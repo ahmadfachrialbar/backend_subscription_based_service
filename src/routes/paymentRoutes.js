@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { simulatePayment, processPayment, getMyPayments, getAllPayments, getPaymentById, midtransNotification } = require('../controllers/paymentController');
+const { simulatePayment, processPayment, getMyPayments, getAllPayments, getPaymentById } = require('../controllers/paymentController');
 const { verifyToken, authorize } = require('../middleware/authMiddleware');
-
-// Midtrans webhook (public notification endpoint)
-router.post('/notification', midtransNotification);
 
 // User: Simulasi pembayaran
 router.post('/simulate', verifyToken, authorize('user', 'admin', 'finance'), simulatePayment);

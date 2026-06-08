@@ -1,28 +1,20 @@
 const { pool } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const { generateTransactionId } = require('../utils/invoiceGenerator');
-const midtransClient = require('midtrans-client');
 
-// Inisialisasi Midtrans Snap client
-const snap = new midtransClient.Snap({
-    isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'false',
-    serverKey: process.env.MIDTRANS_SERVER_KEY,
-    clientKey: process.env.MIDTRANS_CLIENT_KEY
-});
-
-// Simulasi pembayaran dengan Midtrans Snap
+// Simulasi pembayaran untuk testing 
 const simulatePayment = async (req, res, next) => {
     try {
         const { invoice_id, payment_method } = req.body;
         const user_id = req.user.id;
 
         // Validasi input
-        if (!invoice_id) {
-            return errorResponse(res, 'Invoice ID wajib diisi!', 400);
+        if (!invoice_id || !payment_method) {
+            return errorResponse(res, 'Invoice ID dan metode pembayaran wajib diisi!', 400);
         }
 
         const allowedMethods = ['bank_transfer', 'credit_card', 'e_wallet', 'qris'];
-        if (payment_method && !allowedMethods.includes(payment_method)) {
+        if (!allowedMethods.includes(payment_method)) {
             return errorResponse(res, `Metode pembayaran tidak valid. Pilih: ${allowedMethods.join(', ')}`, 400);
         }
 
@@ -60,54 +52,44 @@ const simulatePayment = async (req, res, next) => {
         // Generate transaction ID
         const transactionId = generateTransactionId();
 
-        // Parameter Midtrans
-        const transactionDetails = {
-            order_id: transactionId,
-            gross_amount: Math.round(parseFloat(invoice.total))
-        };
-
-        const customerDetails = {
-            first_name: req.user.full_name || 'Customer',
-            email: req.user.email
-        };
-
-        const parameter = {
-            transaction_details: transactionDetails,
-            customer_details: customerDetails,
-            credit_card: {
-                secure: true
-            }
-        };
-
-        // Aktifkan metode tertentu jika user memilih
-        if (payment_method) {
-            if (payment_method === 'bank_transfer') {
-                parameter.enabled_payments = ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'other_va'];
-            } else if (payment_method === 'credit_card') {
-                parameter.enabled_payments = ['credit_card'];
-            } else if (payment_method === 'e_wallet') {
-                parameter.enabled_payments = ['gopay', 'shopeepay'];
-            } else if (payment_method === 'qris') {
-                parameter.enabled_payments = ['qris'];
-            }
+        // Simulasi: tentukan detail pembayaran berdasarkan metode
+        let paymentDetails = {};
+        switch (payment_method) {
+            case 'bank_transfer':
+                paymentDetails = {
+                    bank: 'BCA',
+                    va_number: `8800${Date.now().toString().slice(-10)}`,
+                    expired_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                };
+                break;
+            case 'credit_card':
+                paymentDetails = {
+                    card_type: 'VISA',
+                    masked_card: '****-****-****-4242',
+                    authorization_id: `AUTH-${Date.now()}`
+                };
+                break;
+            case 'e_wallet':
+                paymentDetails = {
+                    wallet_type: 'GoPay',
+                    deeplink_url: `https://simulator.gopay.co.id/pay/${transactionId}`,
+                    qr_url: `https://simulator.gopay.co.id/qr/${transactionId}`
+                };
+                break;
+            case 'qris':
+                paymentDetails = {
+                    qr_string: `00020101021226660014ID.CO.SIMULATOR.WWW0215${transactionId}`,
+                    expired_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+                };
+                break;
         }
 
-        // Buat transaksi di Midtrans
-        const midtransResponse = await snap.createTransaction(parameter);
-
-        const paymentDetails = {
-            token: midtransResponse.token,
-            redirect_url: midtransResponse.redirect_url,
-            order_id: transactionId,
-            method_hint: payment_method || 'all'
-        };
-
-        // Buat record payment dengan status pending
+        // Buat record payment
         await pool.query(`
             INSERT INTO payments 
             (invoice_id, user_id, amount, payment_method, payment_status, transaction_id, payment_details)
             VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
-            [invoice_id, user_id, invoice.total, payment_method || 'bank_transfer', transactionId, JSON.stringify(paymentDetails)]
+            [invoice_id, user_id, invoice.total, payment_method, transactionId, JSON.stringify(paymentDetails)]
         );
 
         // Ambil payment yang baru dibuat
@@ -119,194 +101,8 @@ const simulatePayment = async (req, res, next) => {
         return successResponse(res, {
             payment: payments[0],
             payment_details: paymentDetails,
-            instructions: {
-                token: midtransResponse.token,
-                redirect_url: midtransResponse.redirect_url,
-                steps: [
-                    'Selesaikan pembayaran di halaman simulator Midtrans Snap.',
-                    `Link Pembayaran: ${midtransResponse.redirect_url}`
-                ]
-            }
-        }, 'Token Midtrans berhasil dibuat. Silakan selesaikan pembayaran.', 201);
-
-    } catch (error) {
-        next(error);
-    }
-};
-
-// Webhook untuk menerima notifikasi dari Midtrans
-const midtransNotification = async (req, res, next) => {
-    try {
-        const statusResponse = await snap.transaction.notification(req.body);
-        const orderId = statusResponse.order_id;
-        const transactionStatus = statusResponse.transaction_status;
-        const fraudStatus = statusResponse.fraud_status;
-
-        console.log(`[Midtrans Webhook] Order ID: ${orderId}, Status: ${transactionStatus}, Fraud: ${fraudStatus}`);
-
-        // Cek payment record di database
-        const [payments] = await pool.query(
-            'SELECT * FROM payments WHERE transaction_id = ?',
-            [orderId]
-        );
-
-        if (payments.length === 0) {
-            return errorResponse(res, 'Payment tidak ditemukan.', 404);
-        }
-
-        const payment = payments[0];
-
-        // Jika sudah final status, tidak perlu diproses ulang
-        if (payment.payment_status === 'completed' || payment.payment_status === 'failed') {
-            return successResponse(res, null, 'Payment sudah diproses sebelumnya.');
-        }
-
-        let newStatus = 'pending';
-        let action = null; // 'approve' atau 'reject'
-
-        if (transactionStatus === 'capture') {
-            if (fraudStatus === 'challenge') {
-                newStatus = 'processing';
-            } else if (fraudStatus === 'accept') {
-                newStatus = 'completed';
-                action = 'approve';
-            }
-        } else if (transactionStatus === 'settlement') {
-            newStatus = 'completed';
-            action = 'approve';
-        } else if (transactionStatus === 'cancel' || transactionStatus === 'deny' || transactionStatus === 'expire') {
-            newStatus = 'failed';
-            action = 'reject';
-        } else if (transactionStatus === 'pending') {
-            newStatus = 'pending';
-        }
-
-        if (action === 'approve') {
-            const connection = await pool.getConnection();
-            await connection.beginTransaction();
-
-            try {
-                // Tentukan ENUM payment_method yang sesuai dari payment_type Midtrans
-                let actualMethod = payment.payment_method;
-                const midtransMethod = statusResponse.payment_type;
-
-                if (midtransMethod === 'credit_card') {
-                    actualMethod = 'credit_card';
-                } else if (midtransMethod === 'gopay' || midtransMethod === 'shopeepay') {
-                    actualMethod = 'e_wallet';
-                } else if (midtransMethod === 'qris') {
-                    actualMethod = 'qris';
-                } else if (midtransMethod === 'bank_transfer' || midtransMethod === 'echannel') {
-                    actualMethod = 'bank_transfer';
-                }
-
-                // 1. Update payment status & payment_method aktual
-                await connection.query(
-                    'UPDATE payments SET payment_status = "completed", payment_method = ?, paid_at = NOW(), updated_at = NOW() WHERE id = ?',
-                    [actualMethod, payment.id]
-                );
-
-                // 2. Update invoice status ke 'paid'
-                await connection.query(
-                    'UPDATE invoices SET status = "paid", paid_at = NOW() WHERE id = ?',
-                    [payment.invoice_id]
-                );
-
-                // 3. Update subscription status ke 'active'
-                const [invoices] = await connection.query(
-                    'SELECT subscription_id FROM invoices WHERE id = ?',
-                    [payment.invoice_id]
-                );
-
-                if (invoices.length > 0 && invoices[0].subscription_id) {
-                    const subId = invoices[0].subscription_id;
-
-                    const [subs] = await connection.query(
-                        'SELECT * FROM subscriptions WHERE id = ?',
-                        [subId]
-                    );
-
-                    if (subs.length > 0) {
-                        const oldStatus = subs[0].status;
-
-                        await connection.query(
-                            'UPDATE subscriptions SET status = "active" WHERE id = ?',
-                            [subId]
-                        );
-
-                        // 4. Catat di subscription history
-                        await connection.query(`
-                            INSERT INTO subscription_history 
-                            (subscription_id, user_id, action, old_status, new_status, metadata)
-                            VALUES (?, ?, 'activated', ?, 'active', ?)`,
-                            [subId, payment.user_id, oldStatus, JSON.stringify({
-                                payment_id: payment.id,
-                                invoice_id: payment.invoice_id,
-                                amount: payment.amount,
-                                gateway: 'midtrans'
-                            })]
-                        );
-                    }
-                }
-
-                // 5. Buat notifikasi sukses
-                await connection.query(`
-                    INSERT INTO notifications (user_id, title, message, type, category, metadata)
-                    VALUES (?, ?, ?, 'success', 'payment', ?)`,
-                    [payment.user_id, 'Pembayaran Berhasil! ✅',
-                     `Pembayaran sebesar Rp ${parseFloat(payment.amount).toLocaleString('id-ID')} berhasil diproses via Midtrans.`,
-                     JSON.stringify({ payment_id: payment.id, invoice_id: payment.invoice_id })]
-                );
-
-                await connection.commit();
-            } catch (err) {
-                await connection.rollback();
-                throw err;
-            } finally {
-                connection.release();
-            }
-
-            console.log(`[Midtrans Webhook] Pembayaran untuk Order ID ${orderId} berhasil diproses & subscription aktif.`);
-            return successResponse(res, null, 'Pembayaran berhasil diproses!');
-
-        } else if (action === 'reject') {
-            const connection = await pool.getConnection();
-            await connection.beginTransaction();
-
-            try {
-                // Update payment status ke failed
-                await connection.query(
-                    'UPDATE payments SET payment_status = "failed", updated_at = NOW() WHERE id = ?',
-                    [payment.id]
-                );
-
-                // Buat notifikasi gagal
-                await connection.query(`
-                    INSERT INTO notifications (user_id, title, message, type, category, metadata)
-                    VALUES (?, ?, ?, 'danger', 'payment', ?)`,
-                    [payment.user_id, 'Pembayaran Gagal ❌',
-                     `Pembayaran sebesar Rp ${parseFloat(payment.amount).toLocaleString('id-ID')} gagal diproses (Status: ${transactionStatus}).`,
-                     JSON.stringify({ payment_id: payment.id, invoice_id: payment.invoice_id })]
-                );
-
-                await connection.commit();
-            } catch (err) {
-                await connection.rollback();
-                throw err;
-            } finally {
-                connection.release();
-            }
-
-            console.log(`[Midtrans Webhook] Pembayaran untuk Order ID ${orderId} ditolak/gagal.`);
-            return successResponse(res, null, 'Pembayaran ditolak/gagal.');
-        } else {
-            // Update status non-final (pending/processing)
-            await pool.query(
-                'UPDATE payments SET payment_status = ?, updated_at = NOW() WHERE id = ?',
-                [newStatus, payment.id]
-            );
-            return successResponse(res, null, `Status pembayaran diupdate menjadi: ${newStatus}`);
-        }
+            instructions: getPaymentInstructions(payment_method, paymentDetails)
+        }, 'Pembayaran berhasil dibuat. Silakan selesaikan pembayaran.', 201);
 
     } catch (error) {
         next(error);
@@ -578,6 +374,5 @@ module.exports = {
     processPayment,
     getMyPayments,
     getAllPayments,
-    getPaymentById,
-    midtransNotification
+    getPaymentById
 };
