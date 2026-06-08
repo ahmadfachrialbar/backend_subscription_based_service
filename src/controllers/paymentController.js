@@ -1,14 +1,6 @@
 const { pool, withTransaction } = require('../config/database');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const { generateTransactionId } = require('../utils/invoiceGenerator');
-const midtransClient = require('midtrans-client');
-
-// Inisialisasi Midtrans Snap client
-const snap = new midtransClient.Snap({
-    isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
-    serverKey: process.env.MIDTRANS_SERVER_KEY,
-    clientKey: process.env.MIDTRANS_CLIENT_KEY
-});
 
 // Simulasi pembayaran untuk testing 
 const simulatePayment = async (req, res, next) => {
